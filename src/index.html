@@ -13,6 +13,39 @@
 </head>
 <body>
     <h1>2D Web Based CAD</h1>
-    <canvas width = "1024" height = "570" id = "my_Canvas" style="border:1px solid #000000;"></canvas>
+    <canvas width = "1024" height = "512" id = "my_Canvas" style="border:1px solid #000000;"></canvas>
+
+    <div class="d-flex flex-row">
+        <div class="p-2">
+            <h4>Shape</h4>
+            <select id="shape">
+                <option value="line">Line</option>
+                <option value="square">Square</option>
+                <option value="rectangle">Rectangle</option>
+                <option value="polygon">Polygon</option>
+            </select>
+        </div>
+        <div class="p-2">
+            <h4>Action</h4>
+            <select id="shape">
+                <option value="move">Move</option>
+                <option value="resize">Resize</option>
+            </select>
+        </div>
+        <div class="p-2">
+            <h4>Color</h4>
+            <input type="color" class="form-control form-control-color" id="exampleColorInput" value="#563d7c" title="Choose your color">
+        </div>
+        <div class="p-2">
+            <h4>Load File</h4>
+            <input class="form-control form-control-sm" id="formFileSm" type="file">
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-danger">Clear Canvas</button>
+    <button type="button" class="btn btn-info">Help</button>
+
+    <script src="script.js"></script>
 </body>
 </html>
