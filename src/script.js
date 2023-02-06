@@ -22,13 +22,14 @@ var isDragging = false;
 
 const shape = document.getElementById("shape");
 const buttonShape = document.getElementById("create-shape");
+const numSideInput = document.getElementById("input-sides");
 const polygonSides = document.getElementById("num-sides");
 
 shape.addEventListener("change", function () {
   if (shape.value == "polygon") {
-    polygonSides.style.display = "block";
+    numSideInput.style.display = "block";
   } else {
-    polygonSides.style.display = "none";
+    numSideInput.style.display = "none";
   }
 });
 buttonShape.addEventListener("click", createShape);
