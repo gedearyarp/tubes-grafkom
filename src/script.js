@@ -21,24 +21,34 @@ var vertexId;
 var isDragging = false;
 
 const shape = document.getElementById("shape");
-const button = document.getElementById("new-square");
-const button2 = document.getElementById("new-line");
-const buttonPolygon = document.getElementById("new-polygon");
+const buttonShape = document.getElementById("create-shape");
 const polygonSides = document.getElementById("num-sides");
 
 shape.addEventListener("change", function () {
   if (shape.value == "polygon") {
     polygonSides.style.display = "block";
+  } else {
+    polygonSides.style.display = "none";
   }
 });
-button.addEventListener("click", createSquare);
-button2.addEventListener("click", createLine);
-buttonPolygon.addEventListener("click", createPolygon);
+buttonShape.addEventListener("click", createShape);
+
 canvas.addEventListener("mousedown", getPoints);
 canvas.addEventListener("mousemove", moveLinePoint);
 canvas.addEventListener("mouseup", function () {
   isDragging = false;
 });
+
+function createShape() {
+  console.log(shape.value);
+  if (shape.value == "square") {
+    createSquare();
+  } else if (shape.value == "line") {
+    createLine();
+  } else if (shape.value == "polygon") {
+    createPolygon();
+  }
+}
 
 function createSquare() {
   console.log("hello");
