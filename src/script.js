@@ -154,11 +154,22 @@ function getPoints(event) {
     shapeData[vertexId].vertices[vertexNum + 1]
   );
 
-  isDragging = true;
+  if (
+    action.value == "delete-vertex" &&
+    shapeData[vertexId].type == "polygon" &&
+    shapeData[vertexId].vertices.length > 6
+  ) {
+    shapeData[vertexId].vertices.splice(vertexNum, 2);
+    setAllVertices();
+    drawAllShapes();
+    isDragging = false;
+  } else {
+    isDragging = true;
+  }
 }
 
 function moveLinePoint(event) {
-  if (isDragging) {
+  if (isDragging && action.value != "delete-vertex") {
     let canvasOffset = canvas.getBoundingClientRect();
 
     var x =

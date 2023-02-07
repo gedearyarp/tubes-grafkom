@@ -50,9 +50,10 @@
           </div>
           <div class="p-2">
             <h4>Action</h4>
-            <select id="shape">
-              <option value="move">Move</option>
+            <select id="action">
+              <option value="move" selected>Move</option>
               <option value="resize">Resize</option>
+              <option value="delete-vertex">Delete Vertex</option>
             </select>
           </div>
           <div class="p-2">
@@ -79,13 +80,15 @@
           </div>
 
           <button type="button" class="btn btn-primary">Save</button>
-          <button type="button" class="btn btn-danger" id="clear-canvas">Clear Canvas</button>
-          <a 
-            href="https://docs.google.com/document/d/1v_ATn5wGeoREVjaOYhDONsMwkVn8_6U1VFQeQsWjoGE/edit#heading=h.htz23twtqlw" 
-            class="btn btn-info" 
+          <button type="button" class="btn btn-danger" id="clear-canvas">
+            Clear Canvas
+          </button>
+          <a
+            href="https://docs.google.com/document/d/1v_ATn5wGeoREVjaOYhDONsMwkVn8_6U1VFQeQsWjoGE/edit#heading=h.htz23twtqlw"
+            class="btn btn-info"
             target="_blank"
           >
-          Help
+            Help
           </a>
         </div>
       </div>
