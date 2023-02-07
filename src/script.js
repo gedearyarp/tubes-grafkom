@@ -25,6 +25,8 @@ const buttonShape = document.getElementById("create-shape");
 const numSideInput = document.getElementById("input-sides");
 const polygonSides = document.getElementById("num-sides");
 
+const buttonClearCanvas = document.getElementById("clear-canvas");
+
 shape.addEventListener("change", function () {
   if (shape.value == "polygon") {
     numSideInput.style.display = "block";
@@ -33,6 +35,7 @@ shape.addEventListener("change", function () {
   }
 });
 buttonShape.addEventListener("click", createShape);
+buttonClearCanvas.addEventListener("click", clearCanvas);
 
 canvas.addEventListener("mousedown", getPoints);
 canvas.addEventListener("mousemove", moveLinePoint);
@@ -210,6 +213,13 @@ function drawAllShapes() {
 
     i++;
   }
+}
+
+function clearCanvas() {
+  allVertices = [];
+  shapeData = [];
+  id = 0;
+  drawAllShapes();
 }
 
 function main() {
