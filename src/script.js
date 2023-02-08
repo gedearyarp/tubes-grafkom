@@ -207,6 +207,7 @@ function createPolygon() {
 }
 
 function getPoints(event) {
+  console.log("MASOK")
   let canvasOffset = canvas.getBoundingClientRect();
 
   var x =
@@ -252,7 +253,7 @@ function getPoints(event) {
 function movePoint(event){
 	if (isDragging){
 		if(shapeData[vertexId].type === "line"){
-				moveLinePoint(event)
+			moveLinePoint(event)
 		}
 
 		else if(shapeData[vertexId].type === "square"){
@@ -267,6 +268,33 @@ function movePoint(event){
 			moveLinePoint(event)
 		}
 	}
+}
+
+function moveShape(event){
+  if (!isDragging) {
+    return;
+  }
+
+  let canvasOffset = canvas.getBoundingClientRect();
+
+  var x =
+    (event.clientX - canvasOffset.left - canvas.width / 2) /
+    (canvas.width / 2);
+
+  var y =
+    (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
+    (canvas.height / 2);
+
+  var xOffset = x - shapeData[vertexId].vertices[vertexNum];
+  var yOffset = y - shapeData[vertexId].vertices[vertexNum + 1];
+
+  for (var i = 0; i < shapeData[vertexId].vertices.length; i += 2) {
+    shapeData[vertexId].vertices[i] += xOffset;
+    shapeData[vertexId].vertices[i + 1] += yOffset;
+  }
+
+  setAllVertices();
+  drawAllShapes();
 }
 
 function moveLinePoint(event) {
