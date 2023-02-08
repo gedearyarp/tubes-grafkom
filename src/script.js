@@ -21,7 +21,14 @@ var vertexId;
 var isDragging = false;
 
 const shape = document.getElementById("shape");
+
+
 const buttonShape = document.getElementById("create-shape");
+
+const shapePick = document.getElementById("shape-pick");
+const colorPick = document.getElementById("color-pick");
+const createShapeButton = document.getElementById("create-shape");
+
 const numSideInput = document.getElementById("input-sides");
 const polygonSides = document.getElementById("num-sides");
 
@@ -42,6 +49,36 @@ canvas.addEventListener("mousemove", movePoint);
 canvas.addEventListener("mouseup", function () {
   isDragging = false;
 });
+
+action.addEventListener("change", function () {
+  numSideInput.style.display = "none";
+
+  if (action.value == "shape-creation") {
+    console.log("shape creation");
+    shapePick.style.display = "block";
+    colorPick.style.display = "none";
+    createShapeButton.style.display = "block";
+    if (shape.value == "polygon") {
+      numSideInput.style.display = "block";
+    }
+  } else if (action.value == "select") {
+    shapePick.style.display = "none";
+    colorPick.style.display = "none";
+    createShapeButton.style.display = "none";
+  } else if (action.value == "move") {
+    shapePick.style.display = "none";
+    colorPick.style.display = "none";
+    createShapeButton.style.display = "none";
+  } else if (action.value == "color-vertex") {
+    shapePick.style.display = "none";
+    colorPick.style.display = "block";
+    createShapeButton.style.display = "none";
+  } else if (action.value == "delete-vertex") {
+    shapePick.style.display = "none";
+    colorPick.style.display = "none";
+    createShapeButton.style.display = "none";
+  }
+})
 
 function createShape() {
   console.log(shape.value);
