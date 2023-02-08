@@ -38,7 +38,7 @@ buttonShape.addEventListener("click", createShape);
 buttonClearCanvas.addEventListener("click", clearCanvas);
 
 canvas.addEventListener("mousedown", getPoints);
-canvas.addEventListener("mousemove", moveLinePoint);
+canvas.addEventListener("mousemove", movePoint);
 canvas.addEventListener("mouseup", function () {
   isDragging = false;
 });
@@ -47,6 +47,8 @@ function createShape() {
   console.log(shape.value);
   if (shape.value == "square") {
     createSquare();
+  } else if (shape.value == "rectangle") {
+    createRectangle();
   } else if (shape.value == "line") {
     createLine();
   } else if (shape.value == "polygon") {
@@ -58,6 +60,36 @@ function createSquare() {
   console.log("hello");
 
   var vertices = [-0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.0];
+
+  for (var i = 0; i < vertices.length; i++) {
+    allVertices.push(vertices[i]);
+  }
+
+  var shapeDatum = new Shape(vertices, "square", id);
+  shapeData.push(shapeDatum);
+  console.log(shapeData);
+
+  id++;
+
+  /*
+
+    var bufferId = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
+    gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW );
+
+    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vPosition );
+
+    */
+
+  drawAllShapes();
+}
+
+function createRectangle() {
+  console.log("hello");
+
+  var vertices = [-0.5, 0.5, 0.3, 0.5, -0.5, 0.0, 0.3, 0.0];
 
   for (var i = 0; i < vertices.length; i++) {
     allVertices.push(vertices[i]);
@@ -168,6 +200,26 @@ function getPoints(event) {
   }
 }
 
+function movePoint(event){
+	if (isDragging){
+		if(shapeData[vertexId].type === "line"){
+				moveLinePoint(event)
+		}
+
+		else if(shapeData[vertexId].type === "square"){
+			moveRectanglePoint(event)
+		}
+
+		else if(shapeData[vertexId].type === "rectangle"){
+			moveRectanglePoint(event)
+		}
+
+		else if(shapeData[vertexId].type === "polygon"){
+			moveLinePoint(event)
+		}
+	}
+}
+
 function moveLinePoint(event) {
   if (isDragging && action.value != "delete-vertex") {
     let canvasOffset = canvas.getBoundingClientRect();
@@ -185,6 +237,43 @@ function moveLinePoint(event) {
     setAllVertices();
     drawAllShapes();
   }
+}
+
+function moveRectanglePoint(event){
+  let canvasOffset = canvas.getBoundingClientRect();
+
+  var x =
+    (event.clientX - canvasOffset.left - canvas.width / 2) /
+    (canvas.width / 2);
+  var y =
+    (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
+    (canvas.height / 2);
+	
+  shapeData[vertexId].vertices[vertexNum] = x;
+  shapeData[vertexId].vertices[vertexNum + 1] = y;
+
+  if (vertexNum == 0){
+      shapeData[vertexId].vertices[4] = x;
+      shapeData[vertexId].vertices[3] = y;
+  }
+
+  else if (vertexNum == 2){
+      shapeData[vertexId].vertices[6] = x;
+      shapeData[vertexId].vertices[1] = y;
+  }
+
+  else if (vertexNum == 4){
+      shapeData[vertexId].vertices[0] = x;
+      shapeData[vertexId].vertices[7] = y;
+  }
+
+  else if (vertexNum == 6){
+      shapeData[vertexId].vertices[2] = x;
+      shapeData[vertexId].vertices[5] = y;
+  }
+
+  setAllVertices();
+  drawAllShapes();
 }
 
 function setAllVertices() {
@@ -208,7 +297,7 @@ function drawAllShapes() {
   var i = 0;
   var j = 0;
   while (i < shapeData.length) {
-    if (shapeData[i].type === "square") {
+    if (shapeData[i].type === "square" || shapeData[i].type === "rectangle") {
       gl.drawArrays(gl.POINTS, j, 4);
       gl.drawArrays(gl.TRIANGLE_STRIP, j, 4);
       j += 4;
