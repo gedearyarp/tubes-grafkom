@@ -27,18 +27,19 @@
         ></canvas>
       </div>
       <div>
-        <div class="d-flex flex-column" style="gap: 0.6rem;">
+        <div class="d-flex flex-column" style="gap: 0.6rem">
           <div class="p-2">
-            <h4 style="font-weight: bold;">ACTION</h4>
+            <h4 style="font-weight: bold">ACTION</h4>
             <select id="action">
               <option value="shape-creation" selected>Create Shape</option>
               <option value="select">Select</option>
               <option value="move">Move</option>
               <option value="color-vertex">Color Vertex</option>
               <option value="delete-vertex">Delete Vertex</option>
+              <option value="add-vertex">Add Vertex</option>
             </select>
           </div>
-          
+
           <div class="p-2" id="shape-pick">
             <h6>Shape</h6>
             <select id="shape">
@@ -49,7 +50,7 @@
             </select>
           </div>
 
-          <div class="p-2" id="input-sides" style="display: none;">
+          <div class="p-2" id="input-sides" style="display: none">
             <h6>Number of Vertex</h6>
             <input
               type="number"
@@ -60,7 +61,7 @@
             />
           </div>
 
-          <div class="p-2" id="color-pick" style="display: none;">
+          <div class="p-2" id="color-pick" style="display: none">
             <h6>Color</h6>
             <input
               type="color"
@@ -72,10 +73,24 @@
           </div>
 
           <div>
-            <button type="button" class="btn btn-dark" id="create-shape" style="margin: auto;">Create Shape</button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              id="create-shape"
+              style="margin: auto"
+            >
+              Create Shape
+            </button>
           </div>
 
-          <div style="height: 1px; width: 100%; background-color: black; margin-top: 15px;"></div>
+          <div
+            style="
+              height: 1px;
+              width: 100%;
+              background-color: black;
+              margin-top: 15px;
+            "
+          ></div>
 
           <div class="p-2">
             <h4>Load File</h4>

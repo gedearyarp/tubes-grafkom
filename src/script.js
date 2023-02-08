@@ -24,7 +24,6 @@ var currentAction = "shape-creation";
 
 const shape = document.getElementById("shape");
 
-
 const buttonShape = document.getElementById("create-shape");
 
 const shapePick = document.getElementById("shape-pick");
@@ -46,16 +45,43 @@ shape.addEventListener("change", function () {
 buttonShape.addEventListener("click", createShape);
 buttonClearCanvas.addEventListener("click", clearCanvas);
 
-canvas.addEventListener("mousedown", getPoints);
+canvas.addEventListener("mousedown", function (event) {
+  getPoints(event);
+  if (
+    action.value == "add-vertex" &&
+    shapeData[vertexId] &&
+    shapeData[vertexId].type == "polygon"
+  ) {
+    getNearestVertices(event);
+  }
+});
+
 canvas.addEventListener("mousemove", function (event) {
   if (currentAction == "move") {
     moveShape(event);
   } else if (currentAction == "select") {
     movePoint(event);
+  } else if (
+    currentAction == "add-vertex" &&
+    shapeData[vertexId] &&
+    shapeData[vertexId].type == "polygon"
+  ) {
+    addVertex(event);
   }
 });
 canvas.addEventListener("mouseup", function () {
   isDragging = false;
+  if (currentAction == "add-vertex" && shapeData[vertexId].type == "polygon") {
+    var i = 0;
+    var shape = shapeData[vertexId];
+    while (i < shape.vertices.length) {
+      if (shape.vertices[i] == -2) {
+        shape.vertices.splice(i, 2);
+      } else {
+        i += 2;
+      }
+    }
+  }
 });
 
 action.addEventListener("change", function () {
@@ -89,8 +115,13 @@ action.addEventListener("change", function () {
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
     currentAction = "delete-vertex";
+  } else if (action.value == "add-vertex") {
+    shapePick.style.display = "none";
+    colorPick.style.display = "none";
+    createShapeButton.style.display = "none";
+    currentAction = "add-vertex";
   }
-})
+});
 
 function createShape() {
   console.log(shape.value);
@@ -207,7 +238,7 @@ function createPolygon() {
 }
 
 function getPoints(event) {
-  console.log("MASOK")
+  console.log("MASOK");
   let canvasOffset = canvas.getBoundingClientRect();
 
   var x =
@@ -250,27 +281,21 @@ function getPoints(event) {
   }
 }
 
-function movePoint(event){
-	if (isDragging){
-		if(shapeData[vertexId].type === "line"){
-			moveLinePoint(event)
-		}
-
-		else if(shapeData[vertexId].type === "square"){
-			moveRectanglePoint(event)
-		}
-
-		else if(shapeData[vertexId].type === "rectangle"){
-			moveRectanglePoint(event)
-		}
-
-		else if(shapeData[vertexId].type === "polygon"){
-			moveLinePoint(event)
-		}
-	}
+function movePoint(event) {
+  if (isDragging) {
+    if (shapeData[vertexId].type === "line") {
+      moveLinePoint(event);
+    } else if (shapeData[vertexId].type === "square") {
+      moveRectanglePoint(event);
+    } else if (shapeData[vertexId].type === "rectangle") {
+      moveRectanglePoint(event);
+    } else if (shapeData[vertexId].type === "polygon") {
+      moveLinePoint(event);
+    }
+  }
 }
 
-function moveShape(event){
+function moveShape(event) {
   if (!isDragging) {
     return;
   }
@@ -278,8 +303,7 @@ function moveShape(event){
   let canvasOffset = canvas.getBoundingClientRect();
 
   var x =
-    (event.clientX - canvasOffset.left - canvas.width / 2) /
-    (canvas.width / 2);
+    (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
 
   var y =
     (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
@@ -316,37 +340,30 @@ function moveLinePoint(event) {
   }
 }
 
-function moveRectanglePoint(event){
+function moveRectanglePoint(event) {
   let canvasOffset = canvas.getBoundingClientRect();
 
   var x =
-    (event.clientX - canvasOffset.left - canvas.width / 2) /
-    (canvas.width / 2);
+    (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
   var y =
     (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
     (canvas.height / 2);
-	
+
   shapeData[vertexId].vertices[vertexNum] = x;
   shapeData[vertexId].vertices[vertexNum + 1] = y;
 
-  if (vertexNum == 0){
-      shapeData[vertexId].vertices[4] = x;
-      shapeData[vertexId].vertices[3] = y;
-  }
-
-  else if (vertexNum == 2){
-      shapeData[vertexId].vertices[6] = x;
-      shapeData[vertexId].vertices[1] = y;
-  }
-
-  else if (vertexNum == 4){
-      shapeData[vertexId].vertices[0] = x;
-      shapeData[vertexId].vertices[7] = y;
-  }
-
-  else if (vertexNum == 6){
-      shapeData[vertexId].vertices[2] = x;
-      shapeData[vertexId].vertices[5] = y;
+  if (vertexNum == 0) {
+    shapeData[vertexId].vertices[4] = x;
+    shapeData[vertexId].vertices[3] = y;
+  } else if (vertexNum == 2) {
+    shapeData[vertexId].vertices[6] = x;
+    shapeData[vertexId].vertices[1] = y;
+  } else if (vertexNum == 4) {
+    shapeData[vertexId].vertices[0] = x;
+    shapeData[vertexId].vertices[7] = y;
+  } else if (vertexNum == 6) {
+    shapeData[vertexId].vertices[2] = x;
+    shapeData[vertexId].vertices[5] = y;
   }
 
   setAllVertices();
@@ -397,6 +414,76 @@ function clearCanvas() {
   shapeData = [];
   id = 0;
   drawAllShapes();
+}
+
+function addVertex(event) {
+  if (isDragging) {
+    let canvasOffset = canvas.getBoundingClientRect();
+    var x =
+      (event.clientX - canvasOffset.left - canvas.width / 2) /
+      (canvas.width / 2);
+    var y =
+      (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
+      (canvas.height / 2);
+
+    var shape = shapeData[vertexId];
+    shape.vertices[vertexNum] = x;
+    shape.vertices[vertexNum + 1] = y;
+
+    setAllVertices();
+    drawAllShapes();
+  }
+}
+
+function getNearestVertices(event) {
+  let canvasOffset = canvas.getBoundingClientRect();
+  var x =
+    (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
+  var y =
+    (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
+    (canvas.height / 2);
+  var shape = shapeData[vertexId];
+
+  // get two vertices that create the nearest line to the mouse
+  var nearest1 = 0;
+  var nearest2 = 0;
+  var minDistance = 1000;
+  for (var i = 0; i < shape.vertices.length; i += 2) {
+    var distance = Math.sqrt(
+      Math.pow(x - shape.vertices[i], 2) +
+        Math.pow(y - shape.vertices[i + 1], 2)
+    );
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearest1 = i;
+    }
+  }
+  minDistance = 1000;
+  for (var i = 0; i < shape.vertices.length; i += 2) {
+    if (i != nearest1) {
+      var distance = Math.sqrt(
+        Math.pow(x - shape.vertices[i], 2) +
+          Math.pow(y - shape.vertices[i + 1], 2)
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest2 = i;
+      }
+    }
+  }
+
+  if (
+    (nearest1 == 0 && nearest2 == shape.vertices.length - 2) ||
+    (nearest1 == shape.vertices.length - 2 && nearest2 == 0)
+  ) {
+    shape.vertices.splice(shape.vertices.length, 0, -2, -2);
+    vertexNum = shape.vertices.length - 2;
+  } else {
+    shape.vertices.splice(Math.min(nearest1, nearest2) + 2, 0, -2, -2);
+    vertexNum = Math.min(nearest1, nearest2) + 2;
+  }
+
+  console.log(shape.vertices);
 }
 
 function main() {
