@@ -1,15 +1,14 @@
 /*
 AUTHOR:
-Christine Hutabarat		13520005
-William Manuel K		13520020
+Christine Hutabarat		  13520005
+William Manuel K		    13520020
 I Gede Arya Raditya P.	13520036
 */
 
-//catatan:
-//belum ada buffer buat warna
-//program masih berantakan
+// global variables
 var canvas = document.getElementById("my_Canvas");
 var gl = canvas.getContext("webgl");
+var currentAction = "shape-creation";
 var program;
 var id = 1;
 
@@ -20,21 +19,17 @@ var vertexNum;
 var vertexId;
 var isDragging = false;
 
-var currentAction = "shape-creation";
-
+// document elements
 const shape = document.getElementById("shape");
-
 const buttonShape = document.getElementById("create-shape");
-
 const shapePick = document.getElementById("shape-pick");
 const colorPick = document.getElementById("color-pick");
 const createShapeButton = document.getElementById("create-shape");
-
 const numSideInput = document.getElementById("input-sides");
 const polygonSides = document.getElementById("num-sides");
-
 const buttonClearCanvas = document.getElementById("clear-canvas");
 
+// event listeners
 shape.addEventListener("change", function () {
   if (shape.value == "polygon") {
     numSideInput.style.display = "block";
@@ -42,7 +37,9 @@ shape.addEventListener("change", function () {
     numSideInput.style.display = "none";
   }
 });
+
 buttonShape.addEventListener("click", createShape);
+
 buttonClearCanvas.addEventListener("click", clearCanvas);
 
 canvas.addEventListener("mousedown", function (event) {
@@ -69,6 +66,7 @@ canvas.addEventListener("mousemove", function (event) {
     addVertex(event);
   }
 });
+
 canvas.addEventListener("mouseup", function () {
   isDragging = false;
   if (currentAction == "add-vertex" && shapeData[vertexId].type == "polygon") {
@@ -123,6 +121,7 @@ action.addEventListener("change", function () {
   }
 });
 
+// functions
 function createShape() {
   console.log(shape.value);
   if (shape.value == "square") {
