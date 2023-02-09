@@ -120,15 +120,6 @@ action.addEventListener("change", function () {
 });
 
 // functions
-function colorVertex() {
-  var shape = shapeData[vertexId];
-  var vertex = shape.vertices;
-  var color = shape.colors;
-
-  const r = colorInput.value.slice(1, 3);
-  const g = colorInput.value.slice(3, 5);
-  const b = colorInput.value.slice(5, 7);
-}
 
 function createShape() {
   if (shape.value == "square") {
@@ -473,9 +464,11 @@ function getNearestVertices(event) {
     (nearest1 == shape.vertices.length - 2 && nearest2 == 0)
   ) {
     shape.vertices.splice(shape.vertices.length, 0, -2, -2);
+    shape.colors.splice(shape.colors.length, 0, 0, 0, 0);
     vertexNum = shape.vertices.length - 2;
   } else {
     shape.vertices.splice(Math.min(nearest1, nearest2) + 2, 0, -2, -2);
+    shape.colors.splice(Math.min(nearest1, nearest2) + 2, 0, 0, 0, 0);
     vertexNum = Math.min(nearest1, nearest2) + 2;
   }
 }
