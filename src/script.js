@@ -490,24 +490,28 @@ function main() {
     alert("WebGL isn't available");
   }
 
-  //vertCode kayanya belum benar nanti diganti
-  var vertCode =
-    "attribute vec4 vPosition;" +
-    "void main(){" +
-    "   gl_Position = vPosition;" +
-    "   gl_PointSize = 10.0;" +
-    "}";
+  var vertCode =`
+    attribute vec4 vPosition;
+    attribute vec3 color;
+    varying vec3 vColor;
+    void main() {
+      gl_Position = vPosition;
+      gl_PointSize = 10.0;
+      vColor = color;
+    }
+  `
 
   var vertShader = gl.createShader(gl.VERTEX_SHADER);
   gl.shaderSource(vertShader, vertCode);
   gl.compileShader(vertShader);
 
-  //ini juga harus diganti kayanya
-  var fragCode =
-    "precision mediump float;" +
-    "void main(){" +
-    "    gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 );" +
-    "}";
+  var fragCode =`
+    precision mediump float;
+    varying vec3 vColor;
+    void main() {
+      gl_FragColor = vec4(vColor, 1.0);
+    }
+  `
 
   var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
   gl.shaderSource(fragShader, fragCode);
