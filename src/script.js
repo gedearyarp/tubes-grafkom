@@ -14,6 +14,7 @@ var id = 1;
 
 var shapeData = [];
 var allVertices = [];
+var allColors = [];
 
 var vertexNum;
 var vertexId;
@@ -139,12 +140,19 @@ function createSquare() {
   console.log("hello");
 
   var vertices = [-0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.0];
+  var colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   for (var i = 0; i < vertices.length; i++) {
     allVertices.push(vertices[i]);
   }
 
-  var shapeDatum = new Shape(vertices, "square", id);
+  for (var i = 0; i < 4; i++) {
+    allColors.push(0);
+    allColors.push(0);
+    allColors.push(0);
+  }
+
+  var shapeDatum = new Shape(vertices, "square", id, colors);
   shapeData.push(shapeDatum);
   console.log(shapeData);
 
@@ -169,12 +177,19 @@ function createRectangle() {
   console.log("hello");
 
   var vertices = [-0.5, 0.5, 0.3, 0.5, -0.5, 0.0, 0.3, 0.0];
+  var colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   for (var i = 0; i < vertices.length; i++) {
     allVertices.push(vertices[i]);
   }
 
-  var shapeDatum = new Shape(vertices, "square", id);
+  for (var i = 0; i < 4; i++) {
+    allColors.push(0.0);
+    allColors.push(0.0);
+    allColors.push(0.0);
+  }
+
+  var shapeDatum = new Shape(vertices, "square", id, colors);
   shapeData.push(shapeDatum);
   console.log(shapeData);
 
@@ -199,12 +214,19 @@ function createLine() {
   console.log("hello2");
 
   var vertices2 = [-0.9, 0.9, 0.0, 0.9];
+  var colors2 = [0, 0, 0, 0, 0, 0];
 
   for (var i = 0; i < vertices2.length; i++) {
     allVertices.push(vertices2[i]);
   }
 
-  var shapeDatum = new Shape(vertices2, "line", id);
+  for (var i = 0; i < 2; i++) {
+    allColors.push(0.0);
+    allColors.push(0.0);
+    allColors.push(0.0);
+  }
+
+  var shapeDatum = new Shape(vertices2, "line", id, colors2);
   shapeData.push(shapeDatum);
   console.log(shapeData);
 
@@ -217,17 +239,30 @@ function createPolygon() {
   const sides = polygonSides.value;
   console.log("sides: " + sides);
   var vertices = [];
+  var colors = [];
   var angle = (2 * Math.PI) / sides;
   for (var i = 0; i < sides; i++) {
     vertices.push(Math.cos(angle * i) / 2);
     vertices.push(Math.sin(angle * i) / 2);
   }
 
+  for (var i = 0; i < sides; i++){
+    colors.push(0.0);
+    colors.push(0.0);
+    colors.push(0.0);
+  }
+
   for (var i = 0; i < vertices.length; i++) {
     allVertices.push(vertices[i]);
   }
 
-  var shapeDatum = new Shape(vertices, "polygon", id);
+  for (var i = 0; i < sides; i++) {
+    allColors.push(0.0);
+    allColors.push(0.0);
+    allColors.push(0.0);
+  }
+
+  var shapeDatum = new Shape(vertices, "polygon", id, colors);
   shapeData.push(shapeDatum);
   console.log(shapeData);
 
@@ -376,32 +411,58 @@ function setAllVertices() {
       allVertices.push(shapeData[i].vertices[j]);
     }
   }
+
+  allColors = [];
+  for (var i = 0; i < shapeData.length; i++) {
+    for (var j = 0; j < shapeData[i].vertices.length; j++) {
+      allColors.push(shapeData[i].colors[j]);
+    }
+  }
 }
 
 function drawAllShapes() {
-  var bufferId = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(allVertices), gl.STATIC_DRAW);
-  var vPosition = gl.getAttribLocation(program, "vPosition");
-  gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vPosition);
-
-  gl.clear(gl.COLOR_BUFFER_BIT);
   var i = 0;
   var j = 0;
   while (i < shapeData.length) {
+    var detailVertices = new Float32Array([]);
+
+    const totalVertices = shapeData[i].vertices.length / 2;
+    console.log(totalVertices)
+    console.log(shapeData[i].colors)
+    for (var k = 0; k < totalVertices; k++) {
+      detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2]]);
+      detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2 + 1]]);
+      detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3]]);
+      detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3 + 1]]);
+      detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3 + 2]]);
+    }
+
+    console.log(detailVertices)
+
+    var bufferId = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(detailVertices), gl.STATIC_DRAW);
+
+    var vPosition = gl.getAttribLocation(program, "vPosition");
+    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 0);
+    gl.enableVertexAttribArray(vPosition);
+
+    var vColor = gl.getAttribLocation(program, "color");
+    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 2*Float32Array.BYTES_PER_ELEMENT);
+    gl.enableVertexAttribArray(vColor);
+
     if (shapeData[i].type === "square" || shapeData[i].type === "rectangle") {
-      gl.drawArrays(gl.POINTS, j, 4);
-      gl.drawArrays(gl.TRIANGLE_STRIP, j, 4);
+      gl.drawArrays(gl.POINTS, 0, totalVertices);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, totalVertices);
       j += 4;
     } else if (shapeData[i].type === "line") {
-      gl.drawArrays(gl.POINTS, j, 2);
-      gl.drawArrays(gl.LINE_STRIP, j, 2);
+      gl.drawArrays(gl.POINTS, 0, totalVertices);
+      gl.drawArrays(gl.LINE_STRIP, 0, totalVertices);
       j += 2;
     } else if (shapeData[i].type === "polygon") {
-      gl.drawArrays(gl.POINTS, j, shapeData[i].vertices.length / 2);
-      gl.drawArrays(gl.TRIANGLE_FAN, j, shapeData[i].vertices.length / 2);
-      j += shapeData[i].vertices.length / 2;
+      gl.drawArrays(gl.POINTS, 0, totalVertices);
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, totalVertices);
+      j += totalVertices;
     }
 
     i++;
@@ -410,6 +471,7 @@ function drawAllShapes() {
 
 function clearCanvas() {
   allVertices = [];
+  allColors = [];
   shapeData = [];
   id = 0;
   drawAllShapes();
