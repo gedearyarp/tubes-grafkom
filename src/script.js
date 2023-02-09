@@ -13,8 +13,6 @@ var program;
 var id = 1;
 
 var shapeData = [];
-var allVertices = [];
-var allColors = [];
 
 var vertexNum;
 var vertexId;
@@ -29,6 +27,7 @@ const createShapeButton = document.getElementById("create-shape");
 const numSideInput = document.getElementById("input-sides");
 const polygonSides = document.getElementById("num-sides");
 const buttonClearCanvas = document.getElementById("clear-canvas");
+const colorInput = document.getElementById("color-input");
 
 // event listeners
 shape.addEventListener("change", function () {
@@ -90,9 +89,7 @@ action.addEventListener("change", function () {
     shapePick.style.display = "block";
     colorPick.style.display = "none";
     createShapeButton.style.display = "block";
-    if (shape.value == "polygon") {
-      numSideInput.style.display = "block";
-    }
+    if (shape.value == "polygon") numSideInput.style.display = "block";
     currentAction = "shape-creation";
   } else if (action.value == "select") {
     shapePick.style.display = "none";
@@ -123,8 +120,17 @@ action.addEventListener("change", function () {
 });
 
 // functions
+function colorVertex() {
+  var shape = shapeData[vertexId];
+  var vertex = shape.vertices;
+  var color = shape.colors;
+
+  const r = colorInput.value.slice(1, 3);
+  const g = colorInput.value.slice(3, 5);
+  const b = colorInput.value.slice(5, 7);
+}
+
 function createShape() {
-  console.log(shape.value);
   if (shape.value == "square") {
     createSquare();
   } else if (shape.value == "rectangle") {
@@ -137,24 +143,11 @@ function createShape() {
 }
 
 function createSquare() {
-  console.log("hello");
-
   var vertices = [-0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.0];
   var colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-  for (var i = 0; i < vertices.length; i++) {
-    allVertices.push(vertices[i]);
-  }
-
-  for (var i = 0; i < 4; i++) {
-    allColors.push(0);
-    allColors.push(0);
-    allColors.push(0);
-  }
-
   var shapeDatum = new Shape(vertices, "square", id, colors);
   shapeData.push(shapeDatum);
-  console.log(shapeData);
 
   id++;
 
@@ -174,24 +167,11 @@ function createSquare() {
 }
 
 function createRectangle() {
-  console.log("hello");
-
   var vertices = [-0.5, 0.5, 0.3, 0.5, -0.5, 0.0, 0.3, 0.0];
   var colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-  for (var i = 0; i < vertices.length; i++) {
-    allVertices.push(vertices[i]);
-  }
-
-  for (var i = 0; i < 4; i++) {
-    allColors.push(0.0);
-    allColors.push(0.0);
-    allColors.push(0.0);
-  }
-
   var shapeDatum = new Shape(vertices, "square", id, colors);
   shapeData.push(shapeDatum);
-  console.log(shapeData);
 
   id++;
 
@@ -211,24 +191,11 @@ function createRectangle() {
 }
 
 function createLine() {
-  console.log("hello2");
-
   var vertices2 = [-0.9, 0.9, 0.0, 0.9];
   var colors2 = [0, 0, 0, 0, 0, 0];
 
-  for (var i = 0; i < vertices2.length; i++) {
-    allVertices.push(vertices2[i]);
-  }
-
-  for (var i = 0; i < 2; i++) {
-    allColors.push(0.0);
-    allColors.push(0.0);
-    allColors.push(0.0);
-  }
-
   var shapeDatum = new Shape(vertices2, "line", id, colors2);
   shapeData.push(shapeDatum);
-  console.log(shapeData);
 
   id++;
 
@@ -237,7 +204,6 @@ function createLine() {
 
 function createPolygon() {
   const sides = polygonSides.value;
-  console.log("sides: " + sides);
   var vertices = [];
   var colors = [];
   var angle = (2 * Math.PI) / sides;
@@ -252,19 +218,8 @@ function createPolygon() {
     colors.push(0.0);
   }
 
-  for (var i = 0; i < vertices.length; i++) {
-    allVertices.push(vertices[i]);
-  }
-
-  for (var i = 0; i < sides; i++) {
-    allColors.push(0.0);
-    allColors.push(0.0);
-    allColors.push(0.0);
-  }
-
   var shapeDatum = new Shape(vertices, "polygon", id, colors);
   shapeData.push(shapeDatum);
-  console.log(shapeData);
 
   id++;
 
@@ -272,7 +227,6 @@ function createPolygon() {
 }
 
 function getPoints(event) {
-  console.log("MASOK");
   let canvasOffset = canvas.getBoundingClientRect();
 
   var x =
@@ -295,19 +249,25 @@ function getPoints(event) {
     }
   }
 
-  console.log(x, y);
-  console.log(
-    shapeData[vertexId].vertices[vertexNum],
-    shapeData[vertexId].vertices[vertexNum + 1]
-  );
-
   if (
     action.value == "delete-vertex" &&
     shapeData[vertexId].type == "polygon" &&
     shapeData[vertexId].vertices.length > 6
   ) {
     shapeData[vertexId].vertices.splice(vertexNum, 2);
-    setAllVertices();
+    drawAllShapes();
+    isDragging = false;
+  } else if (action.value == "color-vertex") {
+    const vertexOrd = vertexNum / 2;
+
+    const r = colorInput.value.slice(1, 3);
+    const g = colorInput.value.slice(3, 5);
+    const b = colorInput.value.slice(5, 7);
+
+    shapeData[vertexId].colors[vertexOrd * 3] = parseInt(r, 16) / 255;
+    shapeData[vertexId].colors[vertexOrd * 3 + 1] = parseInt(g, 16) / 255;
+    shapeData[vertexId].colors[vertexOrd * 3 + 2] = parseInt(b, 16) / 255;
+
     drawAllShapes();
     isDragging = false;
   } else {
@@ -351,7 +311,6 @@ function moveShape(event) {
     shapeData[vertexId].vertices[i + 1] += yOffset;
   }
 
-  setAllVertices();
   drawAllShapes();
 }
 
@@ -369,7 +328,6 @@ function moveLinePoint(event) {
     shapeData[vertexId].vertices[vertexNum] = x;
     shapeData[vertexId].vertices[vertexNum + 1] = y;
 
-    setAllVertices();
     drawAllShapes();
   }
 }
@@ -400,35 +358,17 @@ function moveRectanglePoint(event) {
     shapeData[vertexId].vertices[5] = y;
   }
 
-  setAllVertices();
   drawAllShapes();
 }
 
-function setAllVertices() {
-  allVertices = [];
-  for (var i = 0; i < shapeData.length; i++) {
-    for (var j = 0; j < shapeData[i].vertices.length; j++) {
-      allVertices.push(shapeData[i].vertices[j]);
-    }
-  }
-
-  allColors = [];
-  for (var i = 0; i < shapeData.length; i++) {
-    for (var j = 0; j < shapeData[i].vertices.length; j++) {
-      allColors.push(shapeData[i].colors[j]);
-    }
-  }
-}
-
 function drawAllShapes() {
+  gl.clear(gl.COLOR_BUFFER_BIT);
   var i = 0;
   var j = 0;
   while (i < shapeData.length) {
     var detailVertices = new Float32Array([]);
-
     const totalVertices = shapeData[i].vertices.length / 2;
-    console.log(totalVertices)
-    console.log(shapeData[i].colors)
+
     for (var k = 0; k < totalVertices; k++) {
       detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2]]);
       detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2 + 1]]);
@@ -436,8 +376,6 @@ function drawAllShapes() {
       detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3 + 1]]);
       detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3 + 2]]);
     }
-
-    console.log(detailVertices)
 
     var bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
@@ -470,10 +408,9 @@ function drawAllShapes() {
 }
 
 function clearCanvas() {
-  allVertices = [];
-  allColors = [];
   shapeData = [];
   id = 0;
+
   drawAllShapes();
 }
 
@@ -491,7 +428,6 @@ function addVertex(event) {
     shape.vertices[vertexNum] = x;
     shape.vertices[vertexNum + 1] = y;
 
-    setAllVertices();
     drawAllShapes();
   }
 }
@@ -505,7 +441,6 @@ function getNearestVertices(event) {
     (canvas.height / 2);
   var shape = shapeData[vertexId];
 
-  // get two vertices that create the nearest line to the mouse
   var nearest1 = 0;
   var nearest2 = 0;
   var minDistance = 1000;
@@ -543,8 +478,6 @@ function getNearestVertices(event) {
     shape.vertices.splice(Math.min(nearest1, nearest2) + 2, 0, -2, -2);
     vertexNum = Math.min(nearest1, nearest2) + 2;
   }
-
-  console.log(shape.vertices);
 }
 
 function main() {
