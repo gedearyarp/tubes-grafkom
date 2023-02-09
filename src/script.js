@@ -6,17 +6,16 @@ I Gede Arya Raditya P.	13520036
 */
 
 // global variables
-var canvas = document.getElementById("my_Canvas");
-var gl = canvas.getContext("webgl");
-var currentAction = "shape-creation";
-var program;
-var id = 1;
+let canvas = document.getElementById("my_Canvas");
+let gl = canvas.getContext("webgl");
+let program;
+let id = 1;
 
-var shapeData = [];
+let shapeData = [];
 
-var vertexNum;
-var vertexId;
-var isDragging = false;
+let vertexNum;
+let vertexId;
+let isDragging = false;
 
 // document elements
 const shape = document.getElementById("shape");
@@ -29,9 +28,24 @@ const polygonSides = document.getElementById("num-sides");
 const buttonClearCanvas = document.getElementById("clear-canvas");
 const colorInput = document.getElementById("color-input");
 
+// constants
+const POLYGON = "polygon";
+const SQUARE = "square";
+const RECTANGLE = "rectangle";
+const LINE = "line";
+
+const SHAPE_CREATION = "shape-creation";
+const SELECT = "select";
+const MOVE = "move";
+const COLOR_VERTEX = "color-vertex";
+const DELETE_VERTEX = "delete-vertex";
+const ADD_VERTEX = "add-vertex";
+
+const MAX_DIST = 999;
+
 // event listeners
 shape.addEventListener("change", function () {
-  if (shape.value == "polygon") {
+  if (shape.value == POLYGON) {
     numSideInput.style.display = "block";
   } else {
     numSideInput.style.display = "none";
@@ -47,21 +61,21 @@ canvas.addEventListener("mousedown", function (event) {
   if (
     action.value == "add-vertex" &&
     shapeData[vertexId] &&
-    shapeData[vertexId].type == "polygon"
+    shapeData[vertexId].type == POLYGON
   ) {
     getNearestVertices(event);
   }
 });
 
 canvas.addEventListener("mousemove", function (event) {
-  if (currentAction == "move") {
+  if (action.value == "move") {
     moveShape(event);
-  } else if (currentAction == "select") {
+  } else if (action.value == "select") {
     movePoint(event);
   } else if (
-    currentAction == "add-vertex" &&
+    action.value == "add-vertex" &&
     shapeData[vertexId] &&
-    shapeData[vertexId].type == "polygon"
+    shapeData[vertexId].type == POLYGON
   ) {
     addVertex(event);
   }
@@ -69,15 +83,12 @@ canvas.addEventListener("mousemove", function (event) {
 
 canvas.addEventListener("mouseup", function () {
   isDragging = false;
-  if (currentAction == "add-vertex" && shapeData[vertexId].type == "polygon") {
-    var i = 0;
-    var shape = shapeData[vertexId];
+  if (action.value == "add-vertex" && shapeData[vertexId].type == POLYGON) {
+    let i = 0;
+    let shape = shapeData[vertexId];
     while (i < shape.vertices.length) {
-      if (shape.vertices[i] == -2) {
-        shape.vertices.splice(i, 2);
-      } else {
-        i += 2;
-      }
+      if (shape.vertices[i] == -2) shape.vertices.splice(i, 2);
+      else i += 2;
     }
   }
 });
@@ -89,66 +100,60 @@ action.addEventListener("change", function () {
     shapePick.style.display = "block";
     colorPick.style.display = "none";
     createShapeButton.style.display = "block";
-    if (shape.value == "polygon") numSideInput.style.display = "block";
-    currentAction = "shape-creation";
+    if (shape.value == POLYGON) numSideInput.style.display = "block";
   } else if (action.value == "select") {
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
-    currentAction = "select";
   } else if (action.value == "move") {
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
-    currentAction = "move";
   } else if (action.value == "color-vertex") {
     shapePick.style.display = "none";
     colorPick.style.display = "block";
     createShapeButton.style.display = "none";
-    currentAction = "color-vertex";
   } else if (action.value == "delete-vertex") {
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
-    currentAction = "delete-vertex";
   } else if (action.value == "add-vertex") {
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
-    currentAction = "add-vertex";
   }
 });
 
 // functions
 
 function createShape() {
-  if (shape.value == "square") {
+  if (shape.value == SQUARE) {
     createSquare();
-  } else if (shape.value == "rectangle") {
+  } else if (shape.value == RECTANGLE) {
     createRectangle();
-  } else if (shape.value == "line") {
+  } else if (shape.value == LINE) {
     createLine();
-  } else if (shape.value == "polygon") {
+  } else if (shape.value == POLYGON) {
     createPolygon();
   }
 }
 
 function createSquare() {
-  var vertices = [-0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.0];
-  var colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const vertices = [-0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.0];
+  const colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-  var shapeDatum = new Shape(vertices, "square", id, colors);
+  const shapeDatum = new Shape(vertices, SQUARE, id, colors);
   shapeData.push(shapeDatum);
 
   id++;
 
   /*
 
-    var bufferId = gl.createBuffer();
+    let bufferId = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
     gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW );
 
-    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    let vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
 
@@ -158,21 +163,21 @@ function createSquare() {
 }
 
 function createRectangle() {
-  var vertices = [-0.5, 0.5, 0.3, 0.5, -0.5, 0.0, 0.3, 0.0];
-  var colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const vertices = [-0.5, 0.5, 0.3, 0.5, -0.5, 0.0, 0.3, 0.0];
+  const colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-  var shapeDatum = new Shape(vertices, "square", id, colors);
+  const shapeDatum = new Shape(vertices, SQUARE, id, colors);
   shapeData.push(shapeDatum);
 
   id++;
 
   /*
 
-    var bufferId = gl.createBuffer();
+    let bufferId = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
     gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW );
 
-    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    let vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
 
@@ -182,10 +187,10 @@ function createRectangle() {
 }
 
 function createLine() {
-  var vertices2 = [-0.9, 0.9, 0.0, 0.9];
-  var colors2 = [0, 0, 0, 0, 0, 0];
+  const vertices = [-0.9, 0.9, 0.0, 0.9];
+  const colors = [0, 0, 0, 0, 0, 0];
 
-  var shapeDatum = new Shape(vertices2, "line", id, colors2);
+  const shapeDatum = new Shape(vertices, LINE, id, colors);
   shapeData.push(shapeDatum);
 
   id++;
@@ -195,21 +200,21 @@ function createLine() {
 
 function createPolygon() {
   const sides = polygonSides.value;
-  var vertices = [];
-  var colors = [];
-  var angle = (2 * Math.PI) / sides;
-  for (var i = 0; i < sides; i++) {
+  let vertices = [];
+  let colors = [];
+  let angle = (2 * Math.PI) / sides;
+  for (let i = 0; i < sides; i++) {
     vertices.push(Math.cos(angle * i) / 2);
     vertices.push(Math.sin(angle * i) / 2);
   }
 
-  for (var i = 0; i < sides; i++){
-    colors.push(0.0);
-    colors.push(0.0);
-    colors.push(0.0);
+  for (let i = 0; i < sides; i++){
+    colors.push(0);
+    colors.push(0);
+    colors.push(0);
   }
 
-  var shapeDatum = new Shape(vertices, "polygon", id, colors);
+  let shapeDatum = new Shape(vertices, POLYGON, id, colors);
   shapeData.push(shapeDatum);
 
   id++;
@@ -220,18 +225,18 @@ function createPolygon() {
 function getPoints(event) {
   let canvasOffset = canvas.getBoundingClientRect();
 
-  var x =
+  let x =
     (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
-  var y =
+  let y =
     (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
     (canvas.height / 2);
 
-  var dist = 999;
-  for (var i = 0; i < shapeData.length; i++) {
-    for (var j = 0; j < shapeData[i].vertices.length; j += 2) {
-      var xOffset = Math.abs(x - shapeData[i].vertices[j]);
-      var yOffset = Math.abs(y - shapeData[i].vertices[j + 1]);
-      var offset = xOffset + yOffset;
+  let dist = MAX_DIST;
+  for (let i = 0; i < shapeData.length; i++) {
+    for (let j = 0; j < shapeData[i].vertices.length; j += 2) {
+      let xOffset = Math.abs(x - shapeData[i].vertices[j]);
+      let yOffset = Math.abs(y - shapeData[i].vertices[j + 1]);
+      let offset = xOffset + yOffset;
       if (offset < dist) {
         dist = offset;
         vertexId = i;
@@ -242,7 +247,7 @@ function getPoints(event) {
 
   if (
     action.value == "delete-vertex" &&
-    shapeData[vertexId].type == "polygon" &&
+    shapeData[vertexId].type == POLYGON &&
     shapeData[vertexId].vertices.length > 6
   ) {
     shapeData[vertexId].vertices.splice(vertexNum, 2);
@@ -268,13 +273,13 @@ function getPoints(event) {
 
 function movePoint(event) {
   if (isDragging) {
-    if (shapeData[vertexId].type === "line") {
+    if (shapeData[vertexId].type === LINE) {
       moveLinePoint(event);
-    } else if (shapeData[vertexId].type === "square") {
+    } else if (shapeData[vertexId].type === SQUARE) {
       moveRectanglePoint(event);
-    } else if (shapeData[vertexId].type === "rectangle") {
+    } else if (shapeData[vertexId].type === RECTANGLE) {
       moveRectanglePoint(event);
-    } else if (shapeData[vertexId].type === "polygon") {
+    } else if (shapeData[vertexId].type === POLYGON) {
       moveLinePoint(event);
     }
   }
@@ -287,17 +292,17 @@ function moveShape(event) {
 
   let canvasOffset = canvas.getBoundingClientRect();
 
-  var x =
+  let x =
     (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
 
-  var y =
+  let y =
     (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
     (canvas.height / 2);
 
-  var xOffset = x - shapeData[vertexId].vertices[vertexNum];
-  var yOffset = y - shapeData[vertexId].vertices[vertexNum + 1];
+  let xOffset = x - shapeData[vertexId].vertices[vertexNum];
+  let yOffset = y - shapeData[vertexId].vertices[vertexNum + 1];
 
-  for (var i = 0; i < shapeData[vertexId].vertices.length; i += 2) {
+  for (let i = 0; i < shapeData[vertexId].vertices.length; i += 2) {
     shapeData[vertexId].vertices[i] += xOffset;
     shapeData[vertexId].vertices[i + 1] += yOffset;
   }
@@ -309,10 +314,10 @@ function moveLinePoint(event) {
   if (isDragging && action.value != "delete-vertex") {
     let canvasOffset = canvas.getBoundingClientRect();
 
-    var x =
+    let x =
       (event.clientX - canvasOffset.left - canvas.width / 2) /
       (canvas.width / 2);
-    var y =
+    let y =
       (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
       (canvas.height / 2);
 
@@ -326,9 +331,9 @@ function moveLinePoint(event) {
 function moveRectanglePoint(event) {
   let canvasOffset = canvas.getBoundingClientRect();
 
-  var x =
+  let x =
     (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
-  var y =
+  let y =
     (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
     (canvas.height / 2);
 
@@ -354,13 +359,13 @@ function moveRectanglePoint(event) {
 
 function drawAllShapes() {
   gl.clear(gl.COLOR_BUFFER_BIT);
-  var i = 0;
-  var j = 0;
+  let i = 0;
+  let j = 0;
   while (i < shapeData.length) {
-    var detailVertices = new Float32Array([]);
+    let detailVertices = new Float32Array([]);
     const totalVertices = shapeData[i].vertices.length / 2;
 
-    for (var k = 0; k < totalVertices; k++) {
+    for (let k = 0; k < totalVertices; k++) {
       detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2]]);
       detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2 + 1]]);
       detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3]]);
@@ -368,27 +373,27 @@ function drawAllShapes() {
       detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3 + 2]]);
     }
 
-    var bufferId = gl.createBuffer();
+    let bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(detailVertices), gl.STATIC_DRAW);
 
-    var vPosition = gl.getAttribLocation(program, "vPosition");
+    let vPosition = gl.getAttribLocation(program, "vPosition");
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 0);
     gl.enableVertexAttribArray(vPosition);
 
-    var vColor = gl.getAttribLocation(program, "color");
+    let vColor = gl.getAttribLocation(program, "color");
     gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 2*Float32Array.BYTES_PER_ELEMENT);
     gl.enableVertexAttribArray(vColor);
 
-    if (shapeData[i].type === "square" || shapeData[i].type === "rectangle") {
+    if (shapeData[i].type === SQUARE || shapeData[i].type === RECTANGLE) {
       gl.drawArrays(gl.POINTS, 0, totalVertices);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, totalVertices);
       j += 4;
-    } else if (shapeData[i].type === "line") {
+    } else if (shapeData[i].type === LINE) {
       gl.drawArrays(gl.POINTS, 0, totalVertices);
       gl.drawArrays(gl.LINE_STRIP, 0, totalVertices);
       j += 2;
-    } else if (shapeData[i].type === "polygon") {
+    } else if (shapeData[i].type === POLYGON) {
       gl.drawArrays(gl.POINTS, 0, totalVertices);
       gl.drawArrays(gl.TRIANGLE_FAN, 0, totalVertices);
       j += totalVertices;
@@ -400,7 +405,7 @@ function drawAllShapes() {
 
 function clearCanvas() {
   shapeData = [];
-  id = 0;
+  id = 1;
 
   drawAllShapes();
 }
@@ -408,14 +413,14 @@ function clearCanvas() {
 function addVertex(event) {
   if (isDragging) {
     let canvasOffset = canvas.getBoundingClientRect();
-    var x =
+    let x =
       (event.clientX - canvasOffset.left - canvas.width / 2) /
       (canvas.width / 2);
-    var y =
+    let y =
       (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
       (canvas.height / 2);
 
-    var shape = shapeData[vertexId];
+    let shape = shapeData[vertexId];
     shape.vertices[vertexNum] = x;
     shape.vertices[vertexNum + 1] = y;
 
@@ -425,18 +430,18 @@ function addVertex(event) {
 
 function getNearestVertices(event) {
   let canvasOffset = canvas.getBoundingClientRect();
-  var x =
+  let x =
     (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
-  var y =
+  let y =
     (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
     (canvas.height / 2);
-  var shape = shapeData[vertexId];
+  let shape = shapeData[vertexId];
 
-  var nearest1 = 0;
-  var nearest2 = 0;
-  var minDistance = 1000;
-  for (var i = 0; i < shape.vertices.length; i += 2) {
-    var distance = Math.sqrt(
+  let nearest1 = 0;
+  let nearest2 = 0;
+  let minDistance = 1000;
+  for (let i = 0; i < shape.vertices.length; i += 2) {
+    let distance = Math.sqrt(
       Math.pow(x - shape.vertices[i], 2) +
         Math.pow(y - shape.vertices[i + 1], 2)
     );
@@ -446,9 +451,9 @@ function getNearestVertices(event) {
     }
   }
   minDistance = 1000;
-  for (var i = 0; i < shape.vertices.length; i += 2) {
+  for (let i = 0; i < shape.vertices.length; i += 2) {
     if (i != nearest1) {
-      var distance = Math.sqrt(
+      let distance = Math.sqrt(
         Math.pow(x - shape.vertices[i], 2) +
           Math.pow(y - shape.vertices[i + 1], 2)
       );
@@ -474,11 +479,9 @@ function getNearestVertices(event) {
 }
 
 function main() {
-  if (!gl) {
-    alert("WebGL isn't available");
-  }
+  if (!gl) alert("WebGL isn't available");
 
-  var vertCode =`
+  let vertCode =`
     attribute vec4 vPosition;
     attribute vec3 color;
     varying vec3 vColor;
@@ -489,11 +492,11 @@ function main() {
     }
   `
 
-  var vertShader = gl.createShader(gl.VERTEX_SHADER);
+  let vertShader = gl.createShader(gl.VERTEX_SHADER);
   gl.shaderSource(vertShader, vertCode);
   gl.compileShader(vertShader);
 
-  var fragCode =`
+  let fragCode =`
     precision mediump float;
     varying vec3 vColor;
     void main() {
@@ -501,7 +504,7 @@ function main() {
     }
   `
 
-  var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+  let fragShader = gl.createShader(gl.FRAGMENT_SHADER);
   gl.shaderSource(fragShader, fragCode);
   gl.compileShader(fragShader);
 
