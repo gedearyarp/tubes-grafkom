@@ -27,6 +27,7 @@ const numSideInput = document.getElementById("input-sides");
 const polygonSides = document.getElementById("num-sides");
 const buttonClearCanvas = document.getElementById("clear-canvas");
 const colorInput = document.getElementById("color-input");
+const saveData = document.getElementById("save-data");
 
 // constants
 const POLYGON = "polygon";
@@ -44,6 +45,16 @@ const ADD_VERTEX = "add-vertex";
 const MAX_DIST = 999;
 
 // event listeners
+saveData.addEventListener("click", function () {
+  let data = JSON.stringify(shapeData);
+  let blob = new Blob([data], { type: "text/plain" });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.download = "data.json";
+  a.href = url;
+  a.click();
+});
+
 shape.addEventListener("change", function () {
   if (shape.value == POLYGON) {
     numSideInput.style.display = "block";
