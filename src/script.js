@@ -105,8 +105,10 @@ canvas.addEventListener("mouseup", function () {
     let i = 0;
     let shape = shapeData[vertexId];
     while (i < shape.vertices.length) {
-      if (shape.vertices[i] == -2) shape.vertices.splice(i, 2);
-      else i += 2;
+      if (shape.vertices[i] == -2) {
+        shape.vertices.splice(i, 2);
+        shape.colors.splice((i / 2) * 3, 3);
+      } else i += 2;
     }
   }
 });
@@ -524,7 +526,7 @@ function getNearestVertices(event) {
     (nearest1 == shape.vertices.length - 2 && nearest2 == 0)
   ) {
     shape.vertices.splice(shape.vertices.length, 0, -2, -2);
-    shape.colors.splice(shape.colors.length, 0, 0, 0, 0, 0);
+    shape.colors.splice(shape.colors.length, 0, 0, 0, 0);
     vertexNum = shape.vertices.length - 2;
   } else {
     shape.vertices.splice(Math.min(nearest1, nearest2) + 2, 0, -2, -2);
