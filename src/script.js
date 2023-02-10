@@ -208,7 +208,7 @@ function createPolygon() {
     vertices.push(Math.sin(angle * i) / 2);
   }
 
-  for (let i = 0; i < sides; i++){
+  for (let i = 0; i < sides; i++) {
     colors.push(0);
     colors.push(0);
     colors.push(0);
@@ -251,6 +251,7 @@ function getPoints(event) {
     shapeData[vertexId].vertices.length > 6
   ) {
     shapeData[vertexId].vertices.splice(vertexNum, 2);
+    shapeData[vertexId].colors.splice((vertexNum / 2) * 3, 3);
     drawAllShapes();
     isDragging = false;
   } else if (action.value == "color-vertex") {
@@ -366,23 +367,56 @@ function drawAllShapes() {
     const totalVertices = shapeData[i].vertices.length / 2;
 
     for (let k = 0; k < totalVertices; k++) {
-      detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2]]);
-      detailVertices = new Float32Array([...detailVertices, shapeData[i].vertices[k * 2 + 1]]);
-      detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3]]);
-      detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3 + 1]]);
-      detailVertices = new Float32Array([...detailVertices, shapeData[i].colors[k * 3 + 2]]);
+      detailVertices = new Float32Array([
+        ...detailVertices,
+        shapeData[i].vertices[k * 2],
+      ]);
+      detailVertices = new Float32Array([
+        ...detailVertices,
+        shapeData[i].vertices[k * 2 + 1],
+      ]);
+      detailVertices = new Float32Array([
+        ...detailVertices,
+        shapeData[i].colors[k * 3],
+      ]);
+      detailVertices = new Float32Array([
+        ...detailVertices,
+        shapeData[i].colors[k * 3 + 1],
+      ]);
+      detailVertices = new Float32Array([
+        ...detailVertices,
+        shapeData[i].colors[k * 3 + 2],
+      ]);
     }
 
     let bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(detailVertices), gl.STATIC_DRAW);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array(detailVertices),
+      gl.STATIC_DRAW
+    );
 
     let vPosition = gl.getAttribLocation(program, "vPosition");
-    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 0);
+    gl.vertexAttribPointer(
+      vPosition,
+      2,
+      gl.FLOAT,
+      false,
+      5 * Float32Array.BYTES_PER_ELEMENT,
+      0
+    );
     gl.enableVertexAttribArray(vPosition);
 
     let vColor = gl.getAttribLocation(program, "color");
-    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 2*Float32Array.BYTES_PER_ELEMENT);
+    gl.vertexAttribPointer(
+      vColor,
+      3,
+      gl.FLOAT,
+      false,
+      5 * Float32Array.BYTES_PER_ELEMENT,
+      2 * Float32Array.BYTES_PER_ELEMENT
+    );
     gl.enableVertexAttribArray(vColor);
 
     if (shapeData[i].type === SQUARE || shapeData[i].type === RECTANGLE) {
@@ -464,16 +498,19 @@ function getNearestVertices(event) {
     }
   }
 
+  let colorNearest1 = (nearest1 / 2) * 3;
+  let colorNearest2 = (nearest2 / 2) * 3;
+
   if (
     (nearest1 == 0 && nearest2 == shape.vertices.length - 2) ||
     (nearest1 == shape.vertices.length - 2 && nearest2 == 0)
   ) {
     shape.vertices.splice(shape.vertices.length, 0, -2, -2);
-    shape.colors.splice(shape.colors.length, 0, 0, 0, 0);
+    shape.colors.splice(shape.colors.length, 0, 0, 0, 0, 0);
     vertexNum = shape.vertices.length - 2;
   } else {
     shape.vertices.splice(Math.min(nearest1, nearest2) + 2, 0, -2, -2);
-    shape.colors.splice(Math.min(nearest1, nearest2) + 2, 0, 0, 0, 0);
+    shape.colors.splice(Math.min(colorNearest1, colorNearest2) + 3, 0, 0, 0, 0);
     vertexNum = Math.min(nearest1, nearest2) + 2;
   }
 }
@@ -481,7 +518,7 @@ function getNearestVertices(event) {
 function main() {
   if (!gl) alert("WebGL isn't available");
 
-  let vertCode =`
+  let vertCode = `
     attribute vec4 vPosition;
     attribute vec3 color;
     varying vec3 vColor;
@@ -490,19 +527,19 @@ function main() {
       gl_PointSize = 10.0;
       vColor = color;
     }
-  `
+  `;
 
   let vertShader = gl.createShader(gl.VERTEX_SHADER);
   gl.shaderSource(vertShader, vertCode);
   gl.compileShader(vertShader);
 
-  let fragCode =`
+  let fragCode = `
     precision mediump float;
     varying vec3 vColor;
     void main() {
       gl_FragColor = vec4(vColor, 1.0);
     }
-  `
+  `;
 
   let fragShader = gl.createShader(gl.FRAGMENT_SHADER);
   gl.shaderSource(fragShader, fragCode);
