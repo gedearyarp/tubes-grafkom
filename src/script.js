@@ -28,19 +28,13 @@ const polygonSides = document.getElementById("num-sides");
 const buttonClearCanvas = document.getElementById("clear-canvas");
 const colorInput = document.getElementById("color-input");
 const saveData = document.getElementById("save-data");
+const loadData = document.getElementById("load-data");
 
 // constants
 const POLYGON = "polygon";
 const SQUARE = "square";
 const RECTANGLE = "rectangle";
 const LINE = "line";
-
-const SHAPE_CREATION = "shape-creation";
-const SELECT = "select";
-const MOVE = "move";
-const COLOR_VERTEX = "color-vertex";
-const DELETE_VERTEX = "delete-vertex";
-const ADD_VERTEX = "add-vertex";
 
 const MAX_DIST = 999;
 
@@ -53,6 +47,19 @@ saveData.addEventListener("click", function () {
   a.download = "data.json";
   a.href = url;
   a.click();
+});
+
+loadData.addEventListener("change", function () {
+  let file = loadData.files[0];
+  let reader = new FileReader();
+  reader.readAsText(file);
+  reader.onload = function () {
+    let data = JSON.parse(reader.result);
+    shapeData = data;
+
+    id = shapeData.length + 1;
+    drawAllShapes();
+  }
 });
 
 shape.addEventListener("change", function () {
