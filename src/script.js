@@ -167,18 +167,6 @@ function createSquare() {
 
   id++;
 
-  /*
-
-    let bufferId = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
-    gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW );
-
-    let vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
-
-    */
-
   drawAllShapes();
 }
 
@@ -186,22 +174,10 @@ function createRectangle() {
   const vertices = [-0.5, 0.5, 0.3, 0.5, -0.5, 0.0, 0.3, 0.0];
   const colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-  const shapeDatum = new Shape(vertices, SQUARE, id, colors);
+  const shapeDatum = new Shape(vertices, RECTANGLE, id, colors);
   shapeData.push(shapeDatum);
 
   id++;
-
-  /*
-
-    let bufferId = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
-    gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW );
-
-    let vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
-
-    */
 
   drawAllShapes();
 }
@@ -297,7 +273,7 @@ function movePoint(event) {
     if (shapeData[vertexId].type === LINE) {
       moveLinePoint(event);
     } else if (shapeData[vertexId].type === SQUARE) {
-      moveRectanglePoint(event);
+      moveSquarePoint(event);
     } else if (shapeData[vertexId].type === RECTANGLE) {
       moveRectanglePoint(event);
     } else if (shapeData[vertexId].type === POLYGON) {
@@ -373,6 +349,97 @@ function moveRectanglePoint(event) {
   } else if (vertexNum == 6) {
     shapeData[vertexId].vertices[2] = x;
     shapeData[vertexId].vertices[5] = y;
+  }
+
+  drawAllShapes();
+}
+
+function moveSquarePoint(event){
+  let canvasOffset = canvas.getBoundingClientRect();
+
+  var x =
+    (event.clientX - canvasOffset.left - canvas.width / 2) / (canvas.width / 2);
+  var y =
+    (1 - (event.clientY - canvasOffset.top - canvas.height / 2)) /
+    (canvas.height / 2);
+
+  var minX = 1
+  var maxX = -1
+  for (var i = 0; i<shapeData[vertexId].vertices.length; i+=2){
+    if(shapeData[vertexId].vertices[i] > maxX){
+      maxX = shapeData[vertexId].vertices[i]
+    } 
+    
+    if (shapeData[vertexId].vertices[i] < minX){
+      minX = shapeData[vertexId].vertices[i]
+    }
+  }
+
+  var minY = 1
+  var maxY = -1
+  for (var j = 1; j<shapeData[vertexId].vertices.length; j+=2){
+    if(shapeData[vertexId].vertices[j] > maxY){
+      maxY = shapeData[vertexId].vertices[j]
+    } 
+    
+    if (shapeData[vertexId].vertices[j] < minY){
+      minY = shapeData[vertexId].vertices[j]
+    }
+  }
+
+  //squareCenterX = (shapeData[vertexId].vertices[0] + shapeData[vertexId].vertices[2])/2
+  //squareCenterY = (shapeData[vertexId].vertices[5] + shapeData[vertexId].vertices[1])/2
+
+  squareCenterX = (minX + maxX)/2
+  squareCenterY = (maxY + minY)/2
+
+  xScale = Math.abs((x-squareCenterX)/(shapeData[vertexId].vertices[vertexNum]-squareCenterX))
+  yScale = Math.abs((y-squareCenterY)/(shapeData[vertexId].vertices[vertexNum+1]-squareCenterY))
+  if(xScale > yScale){
+    y = xScale * (shapeData[vertexId].vertices[vertexNum+1]-squareCenterY) + squareCenterY
+  } else if (yScale > xScale) {
+    x = yScale * (shapeData[vertexId].vertices[vertexNum]-squareCenterX) + squareCenterX
+  }
+
+  var squareWidth;
+  var squareHeight;
+  
+  if (vertexNum == 0 && x<shapeData[vertexId].vertices[2] && y>shapeData[vertexId].vertices[5]) {
+    squareWidth = shapeData[vertexId].vertices[2]-x
+    squareHeight = y-shapeData[vertexId].vertices[5]
+    if(squareWidth == squareHeight){
+      shapeData[vertexId].vertices[vertexNum] = x;
+      shapeData[vertexId].vertices[vertexNum + 1] = y;
+      shapeData[vertexId].vertices[4] = x;
+      shapeData[vertexId].vertices[3] = y;
+    }
+  } else if (vertexNum == 2 && x>shapeData[vertexId].vertices[0] && y>shapeData[vertexId].vertices[5]) {
+    squareWidth = x-shapeData[vertexId].vertices[0]
+    squareHeight = y-shapeData[vertexId].vertices[5]
+    if(squareWidth == squareHeight){
+      shapeData[vertexId].vertices[vertexNum] = x;
+      shapeData[vertexId].vertices[vertexNum + 1] = y;
+      shapeData[vertexId].vertices[6] = x;
+      shapeData[vertexId].vertices[1] = y;
+    }
+  } else if (vertexNum == 4 && x<shapeData[vertexId].vertices[2] && y<shapeData[vertexId].vertices[1]) {
+    squareWidth = shapeData[vertexId].vertices[2]-x
+    squareHeight = shapeData[vertexId].vertices[1]-y
+    if(squareWidth == squareHeight){
+      shapeData[vertexId].vertices[vertexNum] = x;
+      shapeData[vertexId].vertices[vertexNum + 1] = y;
+      shapeData[vertexId].vertices[0] = x;
+      shapeData[vertexId].vertices[7] = y;
+    }
+  } else if (vertexNum == 6 && x>shapeData[vertexId].vertices[0] && y<shapeData[vertexId].vertices[1]) {
+    squareWidth = x-shapeData[vertexId].vertices[0]
+    squareHeight = shapeData[vertexId].vertices[1]-y
+    if(squareWidth == squareHeight){
+      shapeData[vertexId].vertices[vertexNum] = x;
+      shapeData[vertexId].vertices[vertexNum + 1] = y;
+      shapeData[vertexId].vertices[2] = x;
+      shapeData[vertexId].vertices[5] = y;
+    }
   }
 
   drawAllShapes();
