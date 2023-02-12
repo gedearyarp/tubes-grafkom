@@ -416,43 +416,51 @@ function moveSquarePoint(event){
 
   var squareWidth;
   var squareHeight;
-  
+
   if (vertexNum == 0 && x<shapeData[vertexId].vertices[2] && y>shapeData[vertexId].vertices[5]) {
     squareWidth = shapeData[vertexId].vertices[2]-x
     squareHeight = y-shapeData[vertexId].vertices[5]
-    if(squareWidth == squareHeight){
+    
+    if (Math.abs(squareWidth-squareHeight) < 0.0000000001){
       shapeData[vertexId].vertices[vertexNum] = x;
       shapeData[vertexId].vertices[vertexNum + 1] = y;
       shapeData[vertexId].vertices[4] = x;
       shapeData[vertexId].vertices[3] = y;
     }
+
   } else if (vertexNum == 2 && x>shapeData[vertexId].vertices[0] && y>shapeData[vertexId].vertices[5]) {
     squareWidth = x-shapeData[vertexId].vertices[0]
     squareHeight = y-shapeData[vertexId].vertices[5]
-    if(squareWidth == squareHeight){
+    
+    if (Math.abs(squareWidth-squareHeight) < 0.0000000001){
       shapeData[vertexId].vertices[vertexNum] = x;
       shapeData[vertexId].vertices[vertexNum + 1] = y;
       shapeData[vertexId].vertices[6] = x;
       shapeData[vertexId].vertices[1] = y;
     }
+
   } else if (vertexNum == 4 && x<shapeData[vertexId].vertices[2] && y<shapeData[vertexId].vertices[1]) {
     squareWidth = shapeData[vertexId].vertices[2]-x
     squareHeight = shapeData[vertexId].vertices[1]-y
-    if(squareWidth == squareHeight){
+    
+    if (Math.abs(squareWidth-squareHeight) < 0.0000000001){
       shapeData[vertexId].vertices[vertexNum] = x;
       shapeData[vertexId].vertices[vertexNum + 1] = y;
       shapeData[vertexId].vertices[0] = x;
       shapeData[vertexId].vertices[7] = y;
     }
+
   } else if (vertexNum == 6 && x>shapeData[vertexId].vertices[0] && y<shapeData[vertexId].vertices[1]) {
     squareWidth = x-shapeData[vertexId].vertices[0]
     squareHeight = shapeData[vertexId].vertices[1]-y
-    if(squareWidth == squareHeight){
+    
+    if (Math.abs(squareWidth-squareHeight) < 0.0000000001){
       shapeData[vertexId].vertices[vertexNum] = x;
       shapeData[vertexId].vertices[vertexNum + 1] = y;
       shapeData[vertexId].vertices[2] = x;
       shapeData[vertexId].vertices[5] = y;
     }
+    
   }
 
   drawAllShapes();
