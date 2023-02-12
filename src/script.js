@@ -129,7 +129,7 @@ action.addEventListener("change", function () {
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
-  } else if (action.value == "color-vertex") {
+  } else if (action.value == "color-vertex" || action.value == "color-shape") {
     shapePick.style.display = "none";
     colorPick.style.display = "block";
     createShapeButton.style.display = "none";
@@ -260,6 +260,19 @@ function getPoints(event) {
     shapeData[vertexId].colors[vertexOrd * 3] = parseInt(r, 16) / 255;
     shapeData[vertexId].colors[vertexOrd * 3 + 1] = parseInt(g, 16) / 255;
     shapeData[vertexId].colors[vertexOrd * 3 + 2] = parseInt(b, 16) / 255;
+
+    drawAllShapes();
+    isDragging = false;
+  } else if (action.value == "color-shape") {
+    const r = colorInput.value.slice(1, 3);
+    const g = colorInput.value.slice(3, 5);
+    const b = colorInput.value.slice(5, 7);
+
+    for (let i = 0; i < shapeData[vertexId].colors.length; i += 3) {
+      shapeData[vertexId].colors[i] = parseInt(r, 16) / 255;
+      shapeData[vertexId].colors[i + 1] = parseInt(g, 16) / 255;
+      shapeData[vertexId].colors[i + 2] = parseInt(b, 16) / 255;
+    }
 
     drawAllShapes();
     isDragging = false;
