@@ -29,6 +29,7 @@ const buttonClearCanvas = document.getElementById("clear-canvas");
 const colorInput = document.getElementById("color-input");
 const saveData = document.getElementById("save-data");
 const loadData = document.getElementById("load-data");
+const convexHullText = document.getElementById("convex-hull");
 
 // constants
 const POLYGON = "polygon";
@@ -82,6 +83,8 @@ canvas.addEventListener("mousedown", function (event) {
     shapeData[vertexId].type == POLYGON
   ) {
     getNearestVertices(event);
+  } else if (action.value == "convex-hull-shape") {
+    convexHull();
   }
 });
 
@@ -117,27 +120,38 @@ action.addEventListener("change", function () {
   numSideInput.style.display = "none";
 
   if (action.value == "shape-creation") {
+    convexHullText.style.display = "none";
     shapePick.style.display = "block";
     colorPick.style.display = "none";
     createShapeButton.style.display = "block";
     if (shape.value == POLYGON) numSideInput.style.display = "block";
   } else if (action.value == "select") {
+    convexHullText.style.display = "none";
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
   } else if (action.value == "move") {
+    convexHullText.style.display = "none";
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
   } else if (action.value == "color-vertex" || action.value == "color-shape") {
+    convexHullText.style.display = "none";
     shapePick.style.display = "none";
     colorPick.style.display = "block";
     createShapeButton.style.display = "none";
   } else if (action.value == "delete-vertex") {
+    convexHullText.style.display = "none";
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
   } else if (action.value == "add-vertex") {
+    convexHullText.style.display = "none";
+    shapePick.style.display = "none";
+    colorPick.style.display = "none";
+    createShapeButton.style.display = "none";
+  } else if (action.value == "convex-hull-shape") {
+    convexHullText.style.display = "block";
     shapePick.style.display = "none";
     colorPick.style.display = "none";
     createShapeButton.style.display = "none";
@@ -145,6 +159,128 @@ action.addEventListener("change", function () {
 });
 
 // functions
+function convexHull() {
+  let shape = shapeData[vertexId];
+  let vertices = shape.vertices;
+  let colors = shape.colors;
+
+  class Point {
+    constructor(x, y, r, g, b) {
+      this.x = x;
+      this.y = y;
+      this.r = r;
+      this.g = g;
+      this.b = b;
+    }
+  }
+
+  let points = [];
+  for (let i = 0; i < vertices.length/2; i++) {
+    let point = new Point(
+      vertices[i*2],
+      vertices[i*2 + 1],
+      colors[i * 3],
+      colors[i * 3 + 1],
+      colors[i * 3 + 2]
+    );
+    points.push(point);
+  }
+
+  let convexHullRes = [];
+  let leftMost = 0;
+  let rightMost = 0;
+  for (let i = 1; i < points.length; i++) {
+    if (points[i].x < points[leftMost].x) leftMost = i;
+    if (points[i].x > points[rightMost].x) rightMost = i;
+  }
+
+  // function divide and conquer
+  function divideAndConquer(left, right, dir) {
+    let pointLine1 = points[left];
+    let pointLine2 = points[right];
+
+    let idx = -1;
+
+    let maxDist = 0;
+
+    for (let i = 0; i < points.length; i++) {
+      let curDist = (points[i].y - pointLine1.y) * (pointLine2.x - pointLine1.x) - 
+                    (points[i].x - pointLine1.x) * (pointLine2.y - pointLine1.y);
+
+      if (dir * curDist >= 0 && Math.abs(curDist) > maxDist) {
+        maxDist = Math.abs(curDist);
+        idx = i;
+      }
+    }
+
+    if (idx == -1) {
+      // check if left and right in convesHullRes
+      let leftIn = false;
+      let rightIn = false;
+      for (let i = 0; i < convexHullRes.length; i++) {
+        if (convexHullRes[i] == left) leftIn = true;
+        if (convexHullRes[i] == right) rightIn = true;
+      }
+
+      if (!leftIn) convexHullRes.push(left);
+      if (!rightIn) convexHullRes.push(right);
+      
+      return;
+    }
+
+    divideAndConquer(left, idx, dir);
+    divideAndConquer(idx, right, dir);
+  }
+
+  divideAndConquer(leftMost, rightMost, 1);
+  divideAndConquer(leftMost, rightMost, -1);
+
+  // order the points in convexHullRes with clockwise
+  let center = new Point(0, 0, 0, 0, 0);
+  for (let i = 0; i < convexHullRes.length; i++) {
+    center.x += points[convexHullRes[i]].x;
+    center.y += points[convexHullRes[i]].y;
+  }
+  center.x /= convexHullRes.length;
+  center.y /= convexHullRes.length;
+
+  let angle = [];
+  for (let i = 0; i < convexHullRes.length; i++) {
+    let curPoint = points[convexHullRes[i]];
+    angle.push(Math.atan2(curPoint.y - center.y, curPoint.x - center.x));
+  }
+
+  for (let i = 0; i < convexHullRes.length; i++) {
+    for (let j = i + 1; j < convexHullRes.length; j++) {
+      if (angle[i] > angle[j]) {
+        let temp = convexHullRes[i];
+        convexHullRes[i] = convexHullRes[j];
+        convexHullRes[j] = temp;
+
+        temp = angle[i];
+        angle[i] = angle[j];
+        angle[j] = temp;
+      }
+    }
+  }
+
+  let newVertices = [];
+  let newColors = [];
+  for (let i = 0; i < convexHullRes.length; i++) {
+    newVertices.push(points[convexHullRes[i]].x);
+    newVertices.push(points[convexHullRes[i]].y);
+    newColors.push(points[convexHullRes[i]].r);
+    newColors.push(points[convexHullRes[i]].g);
+    newColors.push(points[convexHullRes[i]].b);
+  }
+
+  shape.vertices = newVertices;
+  shape.colors = newColors;
+
+  shapeData[vertexId] = shape;
+
+  drawAllShapes();
+}
 
 function createShape() {
   if (shape.value == SQUARE) {
@@ -400,9 +536,6 @@ function moveSquarePoint(event){
     }
   }
 
-  //squareCenterX = (shapeData[vertexId].vertices[0] + shapeData[vertexId].vertices[2])/2
-  //squareCenterY = (shapeData[vertexId].vertices[5] + shapeData[vertexId].vertices[1])/2
-
   squareCenterX = (minX + maxX)/2
   squareCenterY = (maxY + minY)/2
 
@@ -467,6 +600,7 @@ function moveSquarePoint(event){
 }
 
 function drawAllShapes() {
+  console.log(shapeData)
   gl.clear(gl.COLOR_BUFFER_BIT);
   let i = 0;
   let j = 0;
