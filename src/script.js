@@ -194,7 +194,6 @@ function convexHull() {
     if (points[i].x > points[rightMost].x) rightMost = i;
   }
 
-  // function divide and conquer
   function divideAndConquer(left, right, dir) {
     let pointLine1 = points[left];
     let pointLine2 = points[right];
@@ -214,7 +213,6 @@ function convexHull() {
     }
 
     if (idx == -1) {
-      // check if left and right in convesHullRes
       let leftIn = false;
       let rightIn = false;
       for (let i = 0; i < convexHullRes.length; i++) {
@@ -235,7 +233,6 @@ function convexHull() {
   divideAndConquer(leftMost, rightMost, 1);
   divideAndConquer(leftMost, rightMost, -1);
 
-  // order the points in convexHullRes with clockwise
   let center = new Point(0, 0, 0, 0, 0);
   for (let i = 0; i < convexHullRes.length; i++) {
     center.x += points[convexHullRes[i]].x;
