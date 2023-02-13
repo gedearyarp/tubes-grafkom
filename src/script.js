@@ -161,6 +161,9 @@ action.addEventListener("change", function () {
 // functions
 function convexHull() {
   let shape = shapeData[vertexId];
+
+  if (shape.type != POLYGON) return;
+
   let vertices = shape.vertices;
   let colors = shape.colors;
 
